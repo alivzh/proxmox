@@ -6,6 +6,7 @@
   - [x] create a task to clone from a template
   - [x] create a task to configure the specs of the vm
   - [ ] create a task that creates multiple vms at the same time
+  - [ ] create a task that changes disk - and disk lvm of the vm
 ----------------------------------------------------------------
   - [ ] create a role that deletes vm on proxmox
   - [ ] create a prompt in the task that verify the process of deleting vm
