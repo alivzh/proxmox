@@ -1,5 +1,5 @@
 # this repo is not ready at the moment !
-
+### and i should explain that this is a temp repository and its gonna be merged in [alivzh/DevOps/ansible](https://github.com/alivzh/DevOps)
 ## To Do List
   - [x] create a role to create vm on proxmox
   - [x] create a task to configure network 
