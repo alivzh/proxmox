@@ -1,1 +1,12 @@
-# proxmox
+# this repo is not ready at the moment !
+
+## To Do List
+  - [x] create a role to create vm on proxmox
+  - [x] create a task to configure network 
+  - [x] create a task to clone from a template
+  - [x] create a task to configure the specs of the vm
+  - [] create a task that creates multiple vms at the same time
+----------------------------------------------------------------
+  - [] create a role that deletes vm on proxmox
+  - [] create a prompt in the task that verify the process of deleting vm
+  - [] create full tasks to delete completely every configs , disks , and anything acording to a vm
