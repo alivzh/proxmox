@@ -1,4 +1,3 @@
----
 - name: Configure server settings for the VM
   community.general.proxmox_kvm:
     api_host: "{{ PROXMOX_API_HOST }}"
@@ -8,6 +7,11 @@
     vmid: "{{ cloned_vm.vmid }}"
     cores: "{{ VM_CORES }}"
     memory: "{{ VM_MEMORY }}"
-    disk: "{{ VM_DISK }}"
-    network: "{{ VM_NETWORK }}"
+    scsi:
+      storage: "{{ PROXMOX_STORAGE }}"
+      size: "{{ DISK_SIZE }}"
+      format: "{{ PROXMOX_FORMAT }}"
+    net:
+      bridge: "{{ NETWORK_BRIDGE }}"
+      model: "{{ NETWORK_INTERFACE_MODEL }}"
   when: cloned_vm is defined and cloned_vm.vmid is defined

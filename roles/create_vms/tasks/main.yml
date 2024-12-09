@@ -1,30 +1,41 @@
-    - name: Check if the VM already exists
-      community.general.proxmox_kvm:
-        api_host: "{{ PROXMOX_API_HOST }}"
-        api_user: "{{ PROXMOX_API_USERNAME }}"
-        api_password: "{{ PROXMOX_API_PASSWORD }}"
-        node: "{{ PROXMOX_NODE }}"
-        name: "{{ MACHINE_NAME }}"
-        state: current
-      register: vm_info
-      ignore_errors: true
+- name: Check if the VM already exists
+  community.general.proxmox_kvm:
+    api_host: "{{ PROXMOX_API_HOST }}"
+    api_user: "{{ PROXMOX_API_USERNAME }}"
+    api_password: "{{ PROXMOX_API_PASSWORD }}"
+    node: "{{ PROXMOX_NODE }}"
+    name: "{{ MACHINE_NAME }}"
+    state: current
+  register: vm_info
+  ignore_errors: true
+  no_log: true
 
-    - name: Verify if VM exists
-      set_fact:
-        vm_exists: "{{ vm_info.failed is not defined or vm_info.failed == false }}"
+- name: Inform if VM exists or not
+  debug:
+    msg: "VM {{ MACHINE_NAME }} exists."
+  when: vm_info is defined and vm_info.vm_id is defined
 
-    - name: Include create_vm.yml
-      include_tasks: "../roles/create_vms/tasks/create_vm.yml"
-      when: not vm_exists
+- name: Inform if VM does not exist
+  debug:
+    msg: "VM {{ MACHINE_NAME }} does not exist."
+  when: vm_info is not defined or vm_info.vm_id is not defined
 
-    - name: Include network_config.yml
-      include_tasks: "../roles/create_vms/tasks/network_config.yml"
-      when: vm_exists or cloned_vm is defined
+- name: Set fact if VM exists
+  set_fact:
+    vm_exists: "{{ vm_info is defined and vm_info.vm_id is defined }}"
 
-    - name: Include server_config.yml
-      include_tasks: "../roles/create_vms/tasks/server_config.yml"
-      when: vm_exists or cloned_vm is defined
+- name: Create the VM if it does not exist
+  include_tasks: "../roles/create_vms/tasks/create_vm.yml"
+  when: not vm_exists
 
-    - name: Include start_vm.yml
-      include_tasks: "../roles/create_vms/tasks/start_vm.yml"
-      when: vm_exists or cloned_vm is defined
+- name: Configure network settings for the VM
+  include_tasks: "../roles/create_vms/tasks/network_config.yml"
+  when: vm_exists or cloned_vm is defined
+
+- name: Configure server settings for the VM
+  include_tasks: "../roles/create_vms/tasks/server_config.yml"
+  when: vm_exists or cloned_vm is defined
+
+- name: Start the VM
+  include_tasks: "../roles/create_vms/tasks/start_vm.yml"
+  when: vm_exists or cloned_vm is defined
