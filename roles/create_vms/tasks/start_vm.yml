@@ -7,9 +7,4 @@
     node: "{{ PROXMOX_NODE }}"
     vmid: "{{ cloned_vm.vmid }}"
     state: started
-  when: cloned_vm.vmid is defined
-
-- name: Gather VMID of the cloned VM
-  debug:
-    msg: "The VMID of the cloned VM is {{ cloned_vm.vmid }}"
-  when: cloned_vm.vmid is defined
+  when: cloned_vm is defined and cloned_vm.vmid is defined

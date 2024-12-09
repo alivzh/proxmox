@@ -1,23 +1,5 @@
-- name: Check if the VM already exists
-  community.general.proxmox_kvm:
-    api_host: "{{ PROXMOX_API_HOST }}"
-    api_user: "{{ PROXMOX_API_USERNAME }}"
-    api_password: "{{ PROXMOX_API_PASSWORD }}"
-    node: "{{ PROXMOX_NODE }}"
-    vmid: "{{ PROXMOX_VMID }}"
-    state: info
-  register: vm_info
-  ignore_errors: true
-
-- name: Debug VM Info
-  debug:
-    msg: "{{ vm_info }}"
-
-- name: Verify if VM exists
-  set_fact:
-    vm_exists: "{{ vm_info.failed is not defined or vm_info.failed == false }}"
-
-- name: Clone a VM from template if it doesn't exist
+---
+- name: Create or clone the VM
   community.general.proxmox_kvm:
     api_host: "{{ PROXMOX_API_HOST }}"
     api_user: "{{ PROXMOX_API_USERNAME }}"
@@ -29,8 +11,3 @@
     timeout: "{{ PROXMOX_TIMEOUT }}"
   register: cloned_vm
   when: not vm_exists
-
-- name: Show cloned VM info
-  debug:
-    msg: "Cloned VM info: {{ cloned_vm }}"
-  when: cloned_vm is defined

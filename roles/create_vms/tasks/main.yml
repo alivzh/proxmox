@@ -1,12 +1,35 @@
 ---
-- name: Create a VM from a template
-  import_tasks: create_vm.yml
+- name: Create VMs on Proxmox
+  hosts: proxmox
+  gather_facts: yes
+  tasks:
+    - name: Check if the VM already exists
+      community.general.proxmox_kvm:
+        api_host: "{{ PROXMOX_API_HOST }}"
+        api_user: "{{ PROXMOX_API_USERNAME }}"
+        api_password: "{{ PROXMOX_API_PASSWORD }}"
+        node: "{{ PROXMOX_NODE }}"
+        name: "{{ MACHINE_NAME }}"
+        state: current
+      register: vm_info
+      ignore_errors: true
 
-- name: Configure the VM server settings
-  import_tasks: server_config.yml
+    - name: Verify if VM exists
+      set_fact:
+        vm_exists: "{{ vm_info.failed is not defined or vm_info.failed == false }}"
 
-- name: Configure VM networking
-  import_tasks: network_config.yml
+    - name: Include create_vm.yml
+      include_tasks: roles/create_vms/tasks/create_vm.yml
+      when: not vm_exists
 
-- name: Start the VM
-  import_tasks: start_vm.yml
+    - name: Include network_config.yml
+      include_tasks: roles/create_vms/tasks/network_config.yml
+      when: vm_exists or cloned_vm is defined
+
+    - name: Include server_config.yml
+      include_tasks: roles/create_vms/tasks/server_config.yml
+      when: vm_exists or cloned_vm is defined
+
+    - name: Include start_vm.yml
+      include_tasks: roles/create_vms/tasks/start_vm.yml
+      when: vm_exists or cloned_vm is defined
