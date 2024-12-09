@@ -1,0 +1,18 @@
+- name: Clone VM from template
+  hosts: localhost
+  tasks:
+    - name: Clone a VM from template
+      community.general.proxmox_kvm:
+        api_host: "{{ PROXMOX_API_HOST }}"
+        api_user: "{{ PROXMOX_API_USERNAME }}"
+        api_password: "{{ PROXMOX_API_PASSWORD }}"
+        node: "{{ PROXMOX_NODE }}"
+        clone: "{{ CLONE_TEMPLATE_NAME }}"
+        name: "{{ MACHINE_NAME }}"
+        state: present
+        timeout: "{{ PROXMOX_TIMEOUT }}"
+      register: cloned_vm
+
+    - name: Debug cloned_vm output
+      debug:
+        msg: "{{ cloned_vm }}"

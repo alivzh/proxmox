@@ -1,0 +1,17 @@
+- name: Start the VM
+  hosts: localhost
+  tasks:
+    - name: Start the cloned VM
+      community.general.proxmox_kvm:
+        api_host: "{{ PROXMOX_API_HOST }}"
+        api_user: "{{ PROXMOX_API_USERNAME }}"
+        api_password: "{{ PROXMOX_API_PASSWORD }}"
+        node: "{{ PROXMOX_NODE }}"
+        vmid: "{{ cloned_vm.vmid }}"
+        state: started
+      when: cloned_vm.vmid is defined
+
+    - name: Gather VMID of the cloned VM
+      debug:
+        msg: "The VMID of the cloned VM is {{ cloned_vm.vmid }}"
+      when: cloned_vm.vmid is defined

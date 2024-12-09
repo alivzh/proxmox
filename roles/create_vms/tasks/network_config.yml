@@ -1,0 +1,11 @@
+- name: Configure VM networking
+  hosts: localhost
+  tasks:
+    - name: Update network settings using qm command
+      ansible.builtin.shell: |
+        qm set {{ cloned_vm.vmid }} --net0 {{ NETWORK_INTERFACE_MODEL }},bridge={{ NETWORK_BRIDGE }},macaddr={{ MAC_ADDRESS }}
+      register: result
+
+    - name: Show result of qm set command
+      ansible.builtin.debug:
+        msg: "{{ result.stdout }}"

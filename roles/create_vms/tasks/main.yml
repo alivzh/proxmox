@@ -1,55 +1,14 @@
-- name: Clone a VM from template
-  community.general.proxmox_kvm:
-    api_host: "{{ PROXMOX_API_HOST }}"
-    api_user: "{{ PROXMOX_API_USERNAME }}"
-    api_password: "{{ PROXMOX_API_PASSWORD }}"
-    node: "{{ PROXMOX_NODE }}"
-    clone: "{{ CLONE_TEMPLATE_NAME }}"
-    name: "{{ MACHINE_NAME }}"
-    state: present
-    timeout: "{{ PROXMOX_TIMEOUT }}"
-  register: cloned_vm
+- name: Main Playbook to Manage VM Lifecycle
+  hosts: localhost
+  tasks:
+    - name: Create a VM from a template
+      include_playbook: create_vm.yml
 
-- name: Debug cloned_vm output
-  debug:
-    msg: "{{ cloned_vm }}"
+    - name: Configure the VM server settings
+      include_playbook: server_config.yml
 
-- name: Update VM configuration (CPU, Memory, Storage)
-  community.general.proxmox_kvm:
-    api_host: "{{ PROXMOX_API_HOST }}"
-    api_user: "{{ PROXMOX_API_USERNAME }}"
-    api_password: "{{ PROXMOX_API_PASSWORD }}"
-    node: "{{ PROXMOX_NODE }}"
-    vmid: "{{ cloned_vm.vmid }}"
-    cores: "{{ CPU_CORES }}"
-    sockets: "{{ CPU_SOCKETS }}"
-    memory: "{{ MEMORY_SIZE }}"
-    scsi:
-      size: "{{ DISK_SIZE }}"
-      storage: "{{ PROXMOX_STORAGE }}"
-    update: true
-  when: cloned_vm.vmid is defined
+    - name: Configure VM networking
+      include_playbook: network_config.yml
 
-- name: Run qm set command to update network settings
-  ansible.builtin.shell: |
-    qm set {{ cloned_vm.vmid }} --net0 {{ NETWORK_INTERFACE_MODEL }},bridge={{ NETWORK_BRIDGE }},macaddr={{ MAC_ADDRESS }}
-  register: result
-
-- name: Show result of qm set command
-  ansible.builtin.debug:
-    msg: "{{ result.stdout }}"
-
-- name: Start the cloned VM
-  community.general.proxmox_kvm:
-    api_host: "{{ PROXMOX_API_HOST }}"
-    api_user: "{{ PROXMOX_API_USERNAME }}"
-    api_password: "{{ PROXMOX_API_PASSWORD }}"
-    node: "{{ PROXMOX_NODE }}"
-    vmid: "{{ cloned_vm.vmid }}"
-    state: started
-  when: cloned_vm.vmid is defined
-
-- name: Gather VMID of the cloned VM
-  debug:
-    msg: "The VMID of the cloned VM is {{ cloned_vm.vmid }}"
-  when: cloned_vm.vmid is defined
+    - name: Start the VM
+      include_playbook: start_vm.yml
