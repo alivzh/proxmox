@@ -1,5 +1,5 @@
 ---
-- name: Start the cloned VM
+- name: Start the VM
   community.general.proxmox_kvm:
     api_host: "{{ PROXMOX_API_HOST }}"
     api_user: "{{ PROXMOX_API_USERNAME }}"

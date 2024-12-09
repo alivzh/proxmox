@@ -1,8 +1,3 @@
----
-- name: Create VMs on Proxmox
-  hosts: proxmox
-  gather_facts: yes
-  tasks:
     - name: Check if the VM already exists
       community.general.proxmox_kvm:
         api_host: "{{ PROXMOX_API_HOST }}"
@@ -19,17 +14,17 @@
         vm_exists: "{{ vm_info.failed is not defined or vm_info.failed == false }}"
 
     - name: Include create_vm.yml
-      include_tasks: roles/create_vms/tasks/create_vm.yml
+      include_tasks: "../roles/create_vms/tasks/create_vm.yml"
       when: not vm_exists
 
     - name: Include network_config.yml
-      include_tasks: roles/create_vms/tasks/network_config.yml
+      include_tasks: "../roles/create_vms/tasks/network_config.yml"
       when: vm_exists or cloned_vm is defined
 
     - name: Include server_config.yml
-      include_tasks: roles/create_vms/tasks/server_config.yml
+      include_tasks: "../roles/create_vms/tasks/server_config.yml"
       when: vm_exists or cloned_vm is defined
 
     - name: Include start_vm.yml
-      include_tasks: roles/create_vms/tasks/start_vm.yml
+      include_tasks: "../roles/create_vms/tasks/start_vm.yml"
       when: vm_exists or cloned_vm is defined
