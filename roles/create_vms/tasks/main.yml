@@ -1,14 +1,12 @@
-- name: Main Playbook to Manage VM Lifecycle
-  hosts: localhost
-  tasks:
-    - name: Create a VM from a template
-      include_playbook: create_vm.yml
+---
+- name: Create a VM from a template
+  import_tasks: create_vm.yml
 
-    - name: Configure the VM server settings
-      include_playbook: server_config.yml
+- name: Configure the VM server settings
+  import_tasks: server_config.yml
 
-    - name: Configure VM networking
-      include_playbook: network_config.yml
+- name: Configure VM networking
+  import_tasks: network_config.yml
 
-    - name: Start the VM
-      include_playbook: start_vm.yml
+- name: Start the VM
+  import_tasks: start_vm.yml
