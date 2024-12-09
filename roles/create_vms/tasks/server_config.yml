@@ -12,4 +12,4 @@
       size: "{{ DISK_SIZE }}"
       storage: "{{ PROXMOX_STORAGE }}"
     update: true
-  when: cloned_vm.vmid is define
+  when: cloned_vm.vmid is defined

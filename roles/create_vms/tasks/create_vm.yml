@@ -8,7 +8,4 @@
     name: "{{ MACHINE_NAME }}"
     state: present
     timeout: "{{ PROXMOX_TIMEOUT }}"
-  register: cloned_v
-- name: Debug cloned_vm output
-  debug:
-    msg: "{{ cloned_vm }}"
+  register: cloned_vm

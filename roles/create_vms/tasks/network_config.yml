@@ -1,7 +1,9 @@
+---
 - name: Update network settings using qm command
   ansible.builtin.shell: |
     qm set {{ cloned_vm.vmid }} --net0 {{ NETWORK_INTERFACE_MODEL }},bridge={{ NETWORK_BRIDGE }},macaddr={{ MAC_ADDRESS }}
-  register: resul
+  register: result
+
 - name: Show result of qm set command
-  ansible.builtin.debug:
+  debug:
     msg: "{{ result.stdout }}"
