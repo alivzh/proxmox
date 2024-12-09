@@ -15,7 +15,7 @@
 
 - name: Verify if VM exists
   set_fact:
-    vm_exists: "{{ vm_info.changed is not defined }}"
+    vm_exists: "{{ vm_info.failed is not defined or vm_info.failed == false }}"
 
 - name: Clone a VM from template if it doesn't exist
   community.general.proxmox_kvm:
@@ -28,7 +28,7 @@
     state: present
     timeout: "{{ PROXMOX_TIMEOUT }}"
   register: cloned_vm
-  when: vm_exists is not defined or not vm_exists
+  when: not vm_exists
 
 - name: Show cloned VM info
   debug:
