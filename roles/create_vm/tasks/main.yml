@@ -1,0 +1,146 @@
+---
+# Step 1: Check if the VM already exists
+- name: Check if the VM already exists
+  community.general.proxmox_kvm:
+    api_host: "{{ PROXMOX_API_HOST }}"
+    api_user: "{{ PROXMOX_API_USERNAME }}"
+    api_password: "{{ PROXMOX_API_PASSWORD }}"
+    node: "{{ PROXMOX_NODE }}"
+    name: "{{ MACHINE_NAME }}"
+    state: current
+  register: vm_info
+  failed_when: false
+  changed_when: false
+
+# Step 2: Verify if VM exists based on the result
+- name: Verify if VM exists
+  set_fact:
+    vm_exists: "{{ vm_info.msg is not search('does not exist') }}"
+
+# Step 3: Debug VM existence status
+- name: Debug VM existence status
+  debug:
+    msg:
+      - "VM exists: {{ vm_exists }}"
+      - "VM info: {{ vm_info }}"
+
+# Step 4: Include create_vm.yml if VM does not exist
+- name: Include create_vm.yml
+  include_tasks: ../roles/create_vm/tasks/create_vm.yml
+  when: not vm_exists
+
+# Step 5: Include network_config.yml if VM exists or was cloned
+- name: Include network_config.yml
+  include_tasks: ../roles/create_vm/tasks/network_config.yml
+  when: vm_exists or (cloned_vm is defined and cloned_vm is not skipped)
+
+# Step 6: Include server_config.yml if VM exists or was cloned
+- name: Include server_config.yml
+  include_tasks: ../roles/create_vm/tasks/server_config.yml
+  when: vm_exists or (cloned_vm is defined and cloned_vm is not skipped)
+
+# Step 7: Fetch the status of the VM
+- name: Fetch the status of the VM
+  community.general.proxmox_kvm:
+    api_host: "{{ PROXMOX_API_HOST }}"
+    api_user: "{{ PROXMOX_API_USERNAME }}"
+    api_password: "{{ PROXMOX_API_PASSWORD }}"
+    node: "{{ PROXMOX_NODE }}"
+    name: "{{ MACHINE_NAME }}"
+    state: current
+  register: vm_status
+  failed_when: false
+  changed_when: false
+
+# Step 8: Debug VM status
+- name: Debug VM status
+  debug:
+    msg:
+      - "VM current status: {{ vm_status.status if vm_status.status is defined else 'N/A' }}"
+      - "Full VM status: {{ vm_status }}"
+
+# Step 9: Fetch the status of the VM after creation
+- name: Fetch the status of the VM
+  community.general.proxmox_kvm:
+    api_host: "{{ PROXMOX_API_HOST }}"
+    api_user: "{{ PROXMOX_API_USERNAME }}"
+    api_password: "{{ PROXMOX_API_PASSWORD }}"
+    node: "{{ PROXMOX_NODE }}"
+    name: "{{ MACHINE_NAME }}"
+    state: current
+  register: vm_status
+  failed_when: false
+  changed_when: false
+
+# Step 10: Debug VM status
+- name: Debug VM status
+  debug:
+    msg:
+      - "VM current status: {{ vm_status.status if vm_status.status is defined else 'N/A' }}"
+      - "Full VM status: {{ vm_status }}"
+
+# Step 11: Start the VM if it is stopped
+- name: Start the VM if it is stopped
+  community.general.proxmox_kvm:
+    api_host: "{{ PROXMOX_API_HOST }}"
+    api_user: "{{ PROXMOX_API_USERNAME }}"
+    api_password: "{{ PROXMOX_API_PASSWORD }}"
+    node: "{{ PROXMOX_NODE }}"
+    name: "{{ MACHINE_NAME }}"
+    state: started
+  when:
+    - vm_status.status == 'stopped'
+
+# Step 12: Start the VM if it is stopped (redundant, can be removed)
+- name: Start the VM if it is stopped
+  community.general.proxmox_kvm:
+    api_host: "{{ PROXMOX_API_HOST }}"
+    api_user: "{{ PROXMOX_API_USERNAME }}"
+    api_password: "{{ PROXMOX_API_PASSWORD }}"
+    node: "{{ PROXMOX_NODE }}"
+    name: "{{ MACHINE_NAME }}"
+    state: started
+  when:
+    - vm_status.status == 'stopped'
+
+- name: Wait for the VM to be running
+  community.general.proxmox_kvm:
+    api_host: "{{ PROXMOX_API_HOST }}"
+    api_user: "{{ PROXMOX_API_USERNAME }}"
+    api_password: "{{ PROXMOX_API_PASSWORD }}"
+    node: "{{ PROXMOX_NODE }}"
+    name: "{{ MACHINE_NAME }}"
+    state: running
+  register: vm_running_status
+  retries: 60
+  delay: 20
+  until: "'running' in vm_running_status and vm_running_status.status == 'running'"
+  when: vm_status.status != 'running'  # Only run this task if the VM is not already running
+
+
+- name: Debug VM running status
+  debug:
+    msg:
+      - "VM running status: {{ vm_running_status.status if vm_running_status.status is defined else 'No status available' }}"
+      - "Full VM running status: {{ vm_running_status }}"
+
+
+- name: Debug VM running status
+  debug:
+    msg:
+      - "VM running status: {{ vm_running_status.status if vm_running_status.status is defined else 'No status available' }}"
+      - "Full VM running status: {{ vm_running_status }}"
+
+
+# Step 16: Update LVM if necessary
+- name: Debug vm_running_status before LVM update
+  debug:
+    msg: "vm_running_status before LVM update: {{ vm_running_status }}"
+
+- name: Include update_lvm.yml
+  include_tasks: ../roles/create_vm/tasks/update_lvm.yml
+  when:
+    - vm_running_status is defined
+    - vm_running_status.status is defined
+    - vm_running_status.status == 'running'
+    - lvm_update_needed | default(true)

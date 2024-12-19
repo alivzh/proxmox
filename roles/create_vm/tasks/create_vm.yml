@@ -1,4 +1,3 @@
----
 - name: Create or clone the VM
   community.general.proxmox_kvm:
     api_host: "{{ PROXMOX_API_HOST }}"
@@ -9,5 +8,8 @@
     name: "{{ MACHINE_NAME }}"
     state: present
     timeout: "{{ PROXMOX_TIMEOUT }}"
+    onboot: "{{ START_ON_BOOT }}"
+    sata:
+      sata1: '{{ DISK_STORAGE }}:{{ DISK_SIZE }},format={{ DISK_FORMAT }}'
   register: cloned_vm
   when: not vm_exists

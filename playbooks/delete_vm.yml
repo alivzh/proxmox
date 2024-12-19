@@ -1,0 +1,9 @@
+---
+- name: delete VMs
+  hosts: all
+  become: true
+  gather_facts: yes
+  vars_files:
+    - ../group_vars/all.yml  # Adjust the path if necessary
+  roles:
+    - { role: ../roles/delete_vm, tags: 'delete_vms' }
